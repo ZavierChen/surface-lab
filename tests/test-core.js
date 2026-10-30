@@ -8,4 +8,23 @@ for(let solved of [0,1,2])for(let B of [-1,1]){let c=m.canonical({mode:'explicit
 for(let q of [-1,0,1,2]){let t=m.trace2([2,1],[2,2],q,5);if(q<0)assert.equal(t.paths.length,0);else if(q===0)assert.equal(t.points.length,1);else{assert(t.paths.length);for(let path of t.paths)for(let [x,z]of path)assert(Math.abs(2*x*x+z*z-q)<1e-9);}}
 for(let a of [[1,-1],[1,0],[0,0],[1,1]])for(let q of [-1,0,1]){let t=m.trace2(a,[2,2],q,5);for(let path of t.paths)for(let [u,v]of path)assert(Math.abs(a[0]*u*u+a[1]*v*v-q)<1e-8);}
 assert(m.surfaceTraces({a:[1,1,1],p:[4,3,2],q:1},5,0).some(t=>t.type==='isosurface'));
+// Zero-degree terms remain editable in state but become constants in geometry.
+for(const [s,name] of [
+ [{mode:'implicit',a:[2,1,1],p:[0,2,2],q:3},'Elliptic cylinder'],
+ [{mode:'implicit',a:[2,-1,3],p:[0,0,0],q:4},'All of space'],
+ [{mode:'implicit',a:[2,-1,3],p:[0,0,0],q:5},'Empty set'],
+ [{mode:'explicit',solved:1,a:[2,3,0],p:[0,2,0],q:4},'Plane'],
+ [{mode:'explicit',solved:2,a:[2,3,0],p:[0,2,2],q:4},'Parabolic cylinder']
+]){
+ const original=JSON.stringify(s),c=m.canonical(s);check(c,name);assert.equal(JSON.stringify(s),original,'Normalization mutated editor state');
+ for(const v of [[0,0,0],[1,-2,3],[-.5,2,0]]){
+  let expected;
+  if(s.mode==='explicit'){const axes=[0,1,2].filter(i=>i!==s.solved);expected=s.a[0]*v[axes[0]]**s.p[axes[0]]+s.a[1]*v[axes[1]]**s.p[axes[1]]+s.q-v[s.solved];}
+  else expected=s.a.reduce((sum,a,i)=>sum+a*v[i]**s.p[i],-s.q);
+  assert(Math.abs(m.evaluate(c,v)-expected)<1e-9);
+ }
+ for(const trace of m.surfaceTraces(c,5,0))if(trace.type==='surface')for(let i=0;i<trace.x.length;i++)for(let j=0;j<trace.x[i].length;j++){
+  const point=[trace.x[i][j],trace.y[i][j],trace.z[i][j]];if(!point.includes(null))assert(Math.abs(m.evaluate(c,point))<1e-8);
+ }
+}
 console.log(`${count} classification assertions; all 8 preset meshes, Q neck/gap checks, explicit axes, and analytic trace residuals passed.`);

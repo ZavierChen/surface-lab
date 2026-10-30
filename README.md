@@ -25,10 +25,14 @@ Windows users can also run **`Surface Lab Demo.exe`**, which requires Windows x6
 | 功能 · Feature | 中文 | English |
 | --- | --- | --- |
 | 曲面预设 · Presets | 球面、椭球面、单叶与双叶双曲面、椭圆锥面、椭圆抛物面、马鞍面、椭圆柱面 | Sphere, ellipsoid, one-sheet and two-sheet hyperboloids, elliptic cone, elliptic paraboloid, saddle and elliptic cylinder |
-| 调整方程 · Equation controls | 修改系数、指数、常数 Q 与显示范围，观察形状和分类变化 | Change coefficients, exponents, Q and the display range to explore geometry and classification |
+| 调整方程 · Equation controls | 在顶部等式直接输入 x、y、z 的系数与 Q；用六个箭头调整 0～4 次，观察形状和分类变化 | Type x/y/z coefficients and Q directly in the equation; use six arrows to set exponents from 0 to 4 and explore geometry and classification |
 | 平面截线 · Cross-sections | 选择 x = k、y = k 或 z = k，同时观察三维切平面和二维交线 | Choose x = k, y = k or z = k and compare the 3D cutting plane with its 2D trace |
 | 观察方式 · Viewing options | 实体、半透明、轮廓、网格与参考锥面；支持 X、Y、Z 正视图 | Solid, transparent and contour styles, grid and reference cone, plus X/Y/Z orthographic views |
 | 保持视角 · Camera persistence | 调整滑条、画质或窗口大小时，保留当前观察方向、平移和缩放 | Keep the current orientation, pan and zoom while changing parameters, quality or window size |
+
+顶部输入与左侧控件双向同步。0 次项按常数 1 计算；修改显式方程左侧变量的系数或次数时，会切换为隐式方程。
+
+Equation inputs and sidebar controls stay in sync. Zero-degree terms use the constant 1. Editing the solved variable’s coefficient or exponent switches an explicit equation to implicit mode.
 
 ## 鼠标与视角 · Mouse and camera controls
 
@@ -135,6 +139,7 @@ node build/test-controls.js
 node build/test-camera-demo.js
 node build/test-mouse-camera.js
 node build/test-grab-roll.js
+node build/test-equation-editor.js
 ```
 
 浏览器测试需要 Playwright 和 Microsoft Edge。可用 `PLAYWRIGHT_PATH` 指定 Playwright 模块路径，用 `EDGE_PATH` 指定浏览器路径。截图保存在 `build/`。

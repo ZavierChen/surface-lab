@@ -26,6 +26,12 @@ Open `outputs/surface-lab-en.exe`. The desktop application requires Windows x64 
 3. **Cross-sections.** Return to the elliptic paraboloid and set the cutting plane to `y = 2`. The trace is `2x² + z² = 2`, an ellipse with semiaxes 1 and √2. Move k to zero to see the single vertex, then below zero to see an empty intersection.
 4. **Orientation.** Left-drag to grab and rotate in 3D, right-drag around the origin to turn the picture like a steering wheel, hold both mouse buttons and drag to pan (no Shift needed), and scroll to zoom. **X view**, **Y view** and **Z view** look toward the origin from the corresponding positive axis using orthographic projection. **Reset view** returns to the first octant (`x, y, z > 0`), looking toward the origin, with +z upright. It does not change the equation.
 
+## Edit the displayed equation
+
+Type signed decimal values into the three coefficient boxes beside x, y and z, and the Q box on the right. Use the six arrow buttons above and below the variables to set exponents from 0 to 4. Zero-degree terms count as constants, including at coordinate zero. All changes stay synchronized with the sidebar and preserve your camera.
+
+In explicit mode, the left-side variable initially has coefficient 1 and exponent 1. Editing either switches to an equivalent implicit form before applying the change. Incomplete or out-of-range number entries leave the last valid equation in place; press Enter or leave the field to finish.
+
 ## Mathematical model
 
 - Implicit mode displays `A x^px + B y^py + C z^pz = Q` as the zero set of F.
@@ -38,7 +44,7 @@ Geometry is clipped to the displayed cube. Increase quality or reduce the plot r
 
 ## Validation
 
-After building both languages, run `node build/test-core.js` and `node build/test-camera-demo.js` and `node build/test-mouse-camera.js`, then `node build/test-grab-roll.js`. The browser test requires Playwright and Microsoft Edge (or an `EDGE_PATH` override); `PLAYWRIGHT_PATH` may point to an existing Playwright module.
+After building both languages, run `node build/test-core.js` and `node build/test-camera-demo.js` and `node build/test-mouse-camera.js`, then `node build/test-grab-roll.js` and `node build/test-equation-editor.js`. The browser test requires Playwright and Microsoft Edge (or an `EDGE_PATH` override); `PLAYWRIGHT_PATH` may point to an existing Playwright module.
 
 The tests cover mathematical classifications, preset geometry, first-octant camera reset after orbit/pan/zoom, preservation of the current camera while editing parameters, Q transitions, cross-sections and offline operation.
 

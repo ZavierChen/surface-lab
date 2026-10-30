@@ -11,10 +11,15 @@ const PRESETS=[
  {name:'Elliptic cylinder',a:[1,0,2],p:[2,2,2],q:1}
 ];
 function canonical(s){
- if(s.mode!=='explicit')return {a:s.a.slice(),p:s.p.slice(),q:s.q};
- const axes=[0,1,2].filter(i=>i!==s.solved), a=[0,0,0],p=s.p.slice();
- a[s.solved]=-1;p[s.solved]=1;a[axes[0]]=s.a[0];a[axes[1]]=s.a[1];
- return {a,p,q:-s.q};
+ let a=s.a.slice(),p=s.p.slice(),q=s.q;
+ if(s.mode==='explicit'){
+  const axes=[0,1,2].filter(i=>i!==s.solved);a=[0,0,0];
+  a[s.solved]=-1;p[s.solved]=1;a[axes[0]]=s.a[0];a[axes[1]]=s.a[1];q=-s.q;
+ }
+ // Degree zero is a constant polynomial, including at coordinate zero.
+ // Absorb constants before classification, meshing and trace computation.
+ for(let i=0;i<3;i++)if(p[i]===0){q-=a[i];a[i]=0;p[i]=1;}
+ return {a,p,q};
 }
 function evaluate(c,v){return c.a.reduce((t,a,i)=>t+a*v[i]**c.p[i],-c.q);}
 function fmt(x){if(Object.is(x,-0)||x===0)return '0';return Math.abs(x)<.0001?x.toExponential(3):Number(x.toPrecision(6)).toString();}
