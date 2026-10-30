@@ -11,14 +11,14 @@ for(let i=0;i<3;i++){
  let div=document.createElement('div');div.className='coefficient';div.id='coefficient'+i;
  div.innerHTML=`<div class="row"><label id="coefficientLabel${i}" for="a${i}">${'ABC'[i]} · ${AX[i]}</label><input id="an${i}" type="number" step="any" min="-10000" max="10000" aria-label="Exact coefficient ${'ABC'[i]}"></div><input id="a${i}" type="range" min="-5" max="5" step="0.01" aria-label="Coefficient ${'ABC'[i]}">`;$('coefficients').append(div);
  let field=document.createElement('div');field.innerHTML=`<label for="p${i}">p<sub>${AX[i]}</sub></label><select id="p${i}" aria-label="Exponent of ${AX[i]}">${[0,1,2,3,4].map(p=>`<option value="${p}">${p}</option>`).join('')}</select>`;$('exponents').append(field);
- $('a'+i).addEventListener('input',e=>{state.a[i]=+e.target.value;edited();});
+ $('a'+i).addEventListener('input',e=>{state.a[i]=+e.target.value;edited(true);});
  $('an'+i).addEventListener('input',e=>{if(valid(e.target)){state.a[i]=+e.target.value;edited();}});
  $('p'+i).addEventListener('change',e=>{state.p[i]=+e.target.value;edited();});
 }
 PRESETS.forEach((p,i)=>{let b=document.createElement('button');b.textContent=p.name;b.id='preset'+i;b.onclick=()=>applyPreset(i);$('presets').append(b);});
 function valid(el){return el.value!==''&&Number.isFinite(+el.value)&&el.checkValidity();}
 function applyPreset(i){let p=PRESETS[i];Object.assign(state,{mode:p.mode||'implicit',solved:p.solved??1,a:p.a.slice(),p:p.p.slice(),q:p.q,k:p.mode==='explicit'?1:0,traceAxis:1});lastPreset=i;sync(true);return schedule();}
-function edited(){lastPreset=-1;sync();schedule();}
+function edited(interactive=false){lastPreset=-1;sync();schedule(interactive);}
 function syncRange(id,value,min=-5,max=5){let el=$(id);el.min=Math.min(min,value);el.max=Math.max(max,value);el.value=value;}
 function sync(force=false){
  let explicit=state.mode==='explicit',axes=[0,1,2].filter(i=>i!==state.solved);
@@ -41,4 +41,4 @@ function updateText(force=false){let c=canonical(state),cl=classify(c),hyper=cl.
  if(mixed){let at=q=>classify({...c,q}).name.replace('Hyperboloid of ','');$('qGuide').innerHTML=`<span>Q &lt; 0 · ${at(-1)}</span><span>Q = 0 · cone</span><span>Q &gt; 0 · ${at(1)}</span>`;let axis=AX.indexOf(cl.axis),pair=[0,1,2].filter(i=>i!==axis);$('qExplanation').textContent=cone?'At Q = 0 the two nappes meet at the origin.':hyper&&cl.name.includes('one sheet')?`At ${cl.axis} = 0, the waist semiaxes are ${pair.map(i=>fmt(Math.sqrt(c.q/c.a[i]))).join(' and ')}. They shrink to zero as Q approaches 0.`:hyper?`The vertices are at ${cl.axis} = ±${fmt(Math.sqrt(c.q/c.a[axis]))}. The gap closes as Q approaches 0.`:'';
  }else{$('qGuide').innerHTML=state.mode==='explicit'?'<span>Negative shift</span><span>Q translates along the solved axis</span><span>Positive shift</span>':'<span>Negative Q</span><span>Q selects the level set F = 0</span><span>Positive Q</span>';$('qExplanation').textContent=state.mode==='explicit'?`Q moves the surface along ${AX[state.solved]}; it does not change its type.`:'';}
 }
-// Expensive redraws are scheduled after input settles; controls update immediately.
+// Sliders request coarse live previews; idle time restores the selected detail.

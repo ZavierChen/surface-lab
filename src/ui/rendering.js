@@ -17,21 +17,33 @@ function axisDecoration(D){
   axisLabels.push({x:0,y:0,z:0,text:'O (0, 0, 0)',showarrow:true,arrowhead:0,arrowcolor:'#eef5ff',arrowwidth:1,ax:-42,ay:38,font:{size:12,color:'#ffffff'},bgcolor:'rgba(11,19,33,0.85)',borderpad:3});
  return axesCache={D,traces,axisLabels};
 }
-function schedule(){pending=true;clearTimeout(timer);timer=setTimeout(()=>{timer=null;lastRender=render();},160);return lastRender;}
-function makeTrace(c,quality){let axis=state.traceAxis,uv=[0,1,2].filter(i=>i!==axis),q=c.q-c.a[axis]*state.k**c.p[axis];let t=trace2(uv.map(i=>c.a[i]),uv.map(i=>c.p[i]),q,state.D,[121,201,321][quality]);return {...t,axis,uv,q};}
+// One in-flight render and one dirty flag: a new input replaces the pending
+// state, rather than enqueuing another mesh. Never debounce continuous previews.
+let inputRevision=0,lastInputAt=-Infinity,lastDrawStart=-Infinity,refineLevel=null;
+function queueRender(delay=0){clearTimeout(timer);timer=null;if(!busy)timer=setTimeout(()=>{timer=null;lastRender=render();},delay);}
+function previewDelay(){return Math.max(0,50-(performance.now()-lastDrawStart));}
+function schedule(interactive=false){
+ pending=true;inputRevision++;
+ lastInputAt=interactive?performance.now():-Infinity;refineLevel=interactive?0:null;
+ queueRender(interactive?previewDelay():160);return lastRender;
+}
+function makeTrace(c,quality){let axis=state.traceAxis,uv=[0,1,2].filter(i=>i!==axis),q=c.q-c.a[axis]*state.k**c.p[axis];let t=trace2(uv.map(i=>c.a[i]),uv.map(i=>c.p[i]),q,state.D,quality<0?(quality===-2?33:65):[121,201,321][quality]);return {...t,axis,uv,q};}
 function pathArrays(paths,points,mapper){let arr=[[],[],[]];for(let path of paths){for(let p of path){let v=mapper(p);v.forEach((x,i)=>arr[i].push(x));}arr.forEach(a=>a.push(null));}return arr;}
 function traceLayers(t){let D=state.D,axis=t.axis,uv=t.uv,map=v=>{let pt=[];pt[axis]=state.k;pt[uv[0]]=v[0];pt[uv[1]]=v[1];return pt;};let coords=pathArrays(t.paths,t.points,map),corners=[[-D,-D],[D,-D],[D,D],[-D,D]].map(map),layers=[{type:'mesh3d',x:corners.map(v=>v[0]),y:corners.map(v=>v[1]),z:corners.map(v=>v[2]),i:[0,0],j:[1,2],k:[2,3],color:'#ce9ab9',opacity:.12,hoverinfo:'skip',showlegend:false},{type:'scatter3d',x:coords[0],y:coords[1],z:coords[2],mode:'lines',line:{color:'#ff88b0',width:6},showlegend:false,hoverinfo:'skip'}];
  if(t.points.length){let pts=t.points.map(map);layers.push({type:'scatter3d',x:pts.map(v=>v[0]),y:pts.map(v=>v[1]),z:pts.map(v=>v[2]),mode:'markers',marker:{color:'#ff88b0',size:6},showlegend:false});}return layers;}
-async function render(){
- if(busy){pending=true;return;}busy=true;pending=false;const started=performance.now();$('error').textContent='';
+async function render(forceFinal=false){
+ if(busy){pending=true;return;}busy=true;pending=false;const started=performance.now(),revision=inputRevision;
+ const preview=!forceFinal&&started-lastInputAt<220,targetQuality=drawingQuality();
+ const quality=preview?previewQuality.level:forceFinal||refineLevel===null?targetQuality:Math.min(refineLevel,targetQuality);
+ lastDrawStart=started;$('error').textContent='';
  try{
-  const quality=drawingQuality();
-  let c=canonical(state),cl=classify(c),key=JSON.stringify([c,state.D,quality,state.style,state.compare]),D=state.D;
+  const style=preview&&state.style==='contour'?'solid':state.style;
+  let c=canonical(state),cl=classify(c),key=JSON.stringify([c,state.D,quality,style,state.compare]),D=state.D;
   const traceKey=JSON.stringify([c,D,quality,state.traceAxis,state.k]),key3d=JSON.stringify([key,state.grid,state.trace,state.trace?[state.traceAxis,state.k]:null]),key2d=traceKey;
   if(key3d===drawn3d&&key2d===drawn2d)return;
   $('status').textContent='Updating…';
   if(key!==geometryKey){
-   geometry=surfaceTraces(c,D,quality,state.style);
+   geometry=surfaceTraces(c,D,quality,style);
    if(state.compare&&(cl.name.startsWith('Hyperboloid')||cl.name==='Elliptic cone')){
     const referenceKey=JSON.stringify([c.a,c.p,D,quality]);
     if(referenceCache?.key!==referenceKey)referenceCache={key:referenceKey,data:surfaceTraces({...c,q:0},D,quality,'transparent',true)};
@@ -54,8 +66,18 @@ async function render(){
   await Promise.all([drew3d?cameraController.render(traces,layout,plotConfig):Promise.resolve(),key2d!==drawn2d?Plotly.react('plot2d',data2,two,{...plotConfig,scrollZoom:false,displayModeBar:false}):Promise.resolve()]);
   drawn3d=key3d;drawn2d=key2d;
   let analytic=!geometry.some(t=>t.type==='isosurface');$('status').textContent=(analytic?'Analytic geometry':'Sampled F = 0')+' · '+Math.round(performance.now()-started)+' ms';
-  window.__lastResult={classification:cl.name,trace:t.note,surfaceCount:geometry.length,elapsed:performance.now()-started,quality};
+  window.__lastResult={classification:cl.name,trace:t.note,surfaceCount:geometry.length,elapsed:performance.now()-started,quality,preview,equation:c};
   $('status').textContent+=' · '+qualityLabel(quality);
-  if(drew3d&&state.autoQuality)adaptiveQuality.observe(window.__lastResult.elapsed);
- }catch(e){$('error').textContent='Unable to render: '+e.message+' Try a lower quality or a WebGL-enabled browser.';$('status').textContent='Rendering error';console.error(e);}finally{busy=false;if(pending)schedule();}
+  if(drew3d&&preview)previewQuality.observe(window.__lastResult.elapsed);
+  else if(drew3d&&state.autoQuality&&refineLevel===null)adaptiveQuality.observe(window.__lastResult.elapsed);
+ }catch(e){refineLevel=null;$('error').textContent='Unable to render: '+e.message+' Try a lower quality or a WebGL-enabled browser.';$('status').textContent='Rendering error';console.error(e);}finally{
+  busy=false;
+  if(forceFinal&&revision===inputRevision){refineLevel=null;lastInputAt=-Infinity;}
+  if(pending)queueRender(previewDelay());
+  else if(revision===inputRevision&&refineLevel!==null){
+   if(preview)queueRender(Math.max(0,lastInputAt+220-performance.now()));
+   else if(quality<targetQuality){refineLevel=quality+1;queueRender(80);}
+   else{refineLevel=null;lastInputAt=-Infinity;}
+  }
+ }
 }

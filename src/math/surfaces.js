@@ -25,7 +25,7 @@ function indexedPatch(rows,base,color){
 }
 function grid(D,n){let key=D+':'+n;if(gridCache.has(key))return gridCache.get(key);let s=linspace(-D,D,n),x=[],y=[],z=[],powers=s.map(v=>[0,v,v*v,v*v*v,v**4]);for(let i=0;i<n;i++)for(let j=0;j<n;j++)for(let k=0;k<n;k++){x.push(s[i]);y.push(s[j]);z.push(s[k]);}let g={x,y,z,powers,n};gridCache.clear();gridCache.set(key,g);return g;}
 function surfaceTraces(c,D,quality,style='solid',reference=false){
- const n=[33,49,73][quality],active=[0,1,2].filter(i=>c.a[i]!==0),cl=classify(c),color=reference?'#f8b85a':'#4accc5',opacity=reference?.14:style==='transparent'?.48:style==='contour'?.78:1;
+ const n=quality<0?(quality===-2?9:17):[33,49,73][quality],active=[0,1,2].filter(i=>c.a[i]!==0),cl=classify(c),color=reference?'#f8b85a':'#4accc5',opacity=reference?.14:style==='transparent'?.48:style==='contour'?.78:1;
  const base={showscale:false,showlegend:false,opacity,colorscale:[[0,color],[1,color]],hoverinfo:'skip',lighting:{ambient:.62,diffuse:.8,roughness:.7,specular:.18}};
  function patch(rows){if(style!=='contour')return indexedPatch(rows,base,color);let x=[],y=[],z=[];for(let row of rows){x.push(row.map(v=>v?.[0]??null));y.push(row.map(v=>v?.[1]??null));z.push(row.map(v=>v?.[2]??null));}return {...base,type:'surface',x,y,z,connectgaps:false,contours:Object.fromEntries(AX.map(k=>[k,{show:true,color:'#173c42',width:1,highlight:false}]))};}
  function clip(v){return v.every(x=>Math.abs(x)<=D+1e-8)?v:null;}
@@ -63,7 +63,7 @@ function surfaceTraces(c,D,quality,style='solid',reference=false){
   return t.paths.map(path=>patch([-D,D].map(d=>path.map(v=>{let pt=[];pt[axis]=d;active.forEach((i,k)=>pt[i]=v[k]);return pt;}))));
  }
  // General F=0: cache coordinates and coordinate powers; only recompute scalar values on changes.
- const g=grid(D,[29,41,57][quality]),scalarKey=JSON.stringify([c.a,c.p,D,quality]);
+ const g=grid(D,quality<0?(quality===-2?13:19):[29,41,57][quality]),scalarKey=JSON.stringify([c.a,c.p,D,quality]);
  if(scalarCache?.key!==scalarKey){
   const weighted=c.a.map((a,axis)=>g.powers.map(p=>a*p[c.p[axis]])),value=new Array(g.n**3);let idx=0;
   for(let i=0;i<g.n;i++)for(let j=0;j<g.n;j++){const row=weighted[0][i]+weighted[1][j];for(let k=0;k<g.n;k++)value[idx++]=row+weighted[2][k];}

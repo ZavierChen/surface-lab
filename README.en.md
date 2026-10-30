@@ -6,7 +6,7 @@ An offline interactive explorer for quadric surfaces, implicit level sets and pl
 
 [Open the online demo](https://zavierchen.github.io/surface-lab/) or [download the offline package](https://github.com/ZavierChen/surface-lab/releases/latest/download/Surface-Lab-English-Demo.zip). The hosted version runs in the visitor’s browser; the author’s computer does not need to stay on.
 
-Auto quality adjusts detail using a 50 ms draw-time budget (a target of 20 updates/s, not guaranteed display FPS). Slider edits redraw after about 160 ms of stable input. Select a fixed quality level to override adaptation.
+Sliders show continuous coarse previews of the latest parameters. After about 220 ms of stable input, detail increases in stages. Preview sampling adapts to draw time, targeting at most 20 updates/s; actual speed depends on the computer. Manual quality sets the final detail. Contour lines return after input settles.
 
 ```text
 node scripts/prepare.js

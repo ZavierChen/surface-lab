@@ -42,9 +42,9 @@ Equation inputs and sidebar controls stay in sync. Zero-degree terms use the con
 
 ## 性能与画质 · Performance and quality
 
-拖动滑条时先更新数值，停止输入约 160 毫秒后再绘制最后的状态。自动画质默认开启，按绘制耗时在流畅、标准、精细之间调整：预算为每次 50 毫秒，约相当于每秒 20 次更新；这是调整目标，不是保证的实际显示帧率。一次过慢即降低一级，连续六次较快才恢复一级，避免频繁跳变。仍可手动固定画质。
+滑动时连续显示简化预览，只绘制最新参数；停稳约 0.22 秒后逐级恢复细节。预览按绘制耗时自动调整采样密度，目标最多每秒 20 次更新，实际速度取决于电脑。手动画质控制最终细节；轮廓效果在停稳后恢复。
 
-Slider values update immediately; the plot redraws the latest state after about 160 ms without new input. Auto quality is enabled by default and adjusts detail using a 50 ms draw-time budget, equivalent to a target of 20 updates per second rather than a guaranteed display frame rate. A slow update lowers detail; six fast updates restore one level. Manual quality overrides remain available.
+Sliders show continuous coarse previews of the latest parameters. After about 220 ms of stable input, detail increases in stages. Preview sampling adapts to draw time, targeting at most 20 updates/s; actual speed depends on the computer. Manual quality sets the final detail. Contour lines return after input settles.
 
 实体和半透明的解析曲面直接使用带索引的三角网格，复用连接关系；Q 变化时参考锥面保持缓存。高次曲面的 Q 作为等值面阈值，复用采样值。突出轮廓模式保留原等高线绘法，可能较慢。
 
