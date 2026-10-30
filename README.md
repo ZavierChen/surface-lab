@@ -46,6 +46,10 @@ Equation inputs and sidebar controls stay in sync. Zero-degree terms use the con
 
 Slider values update immediately; the plot redraws the latest state after about 160 ms without new input. Auto quality is enabled by default and adjusts detail using a 50 ms draw-time budget, equivalent to a target of 20 updates per second rather than a guaranteed display frame rate. A slow update lowers detail; six fast updates restore one level. Manual quality overrides remain available.
 
+实体和半透明的解析曲面直接使用带索引的三角网格，复用连接关系；Q 变化时参考锥面保持缓存。高次曲面的 Q 作为等值面阈值，复用采样值。突出轮廓模式保留原等高线绘法，可能较慢。
+
+Solid and transparent analytic surfaces use indexed triangle meshes with reusable connectivity. Q updates reuse the reference cone; higher-degree surfaces reuse scalar samples and change only the isovalue. Contour mode retains the original isoline renderer and may be slower.
+
 无变化时不重绘；切换三维外观不会重画二维截线，隐藏切平面后调整截线也不会重画三维曲面。
 
 Unchanged views skip redraws. Changing 3D appearance does not redraw the 2D trace, and editing a hidden cutting plane does not redraw the 3D surface.
@@ -154,6 +158,7 @@ Edit the source under `src/` and rebuild. Generated `build/` and `outputs/` dire
 ```powershell
 node scripts/prepare.js
 node build/test-core.js
+node build/test-mesh.js
 node build/build-zh.js
 node build/build.js
 node build/test-zh.js
@@ -174,6 +179,10 @@ Browser tests require Playwright and Microsoft Edge. Set `PLAYWRIGHT_PATH` to us
 Tests cover mathematical classifications, all eight presets, Q transitions, traces, offline operation and responsive layouts. Camera tests inspect the actual WebGL camera and render matrices to verify drag direction, origin-centered screen rotation, two-button panning, zoom and camera persistence through redraws and resizing.
 
 </details>
+
+性能对比可运行 `node tests/benchmark-interactions.js before.html after.html`，在同一浏览器、相同画质下比较多个参数更新路径。
+
+Use `node tests/benchmark-interactions.js before.html after.html` to compare parameter updates in the same browser at the same quality.
 
 ## 许可与第三方组件 · Licensing and third-party components
 

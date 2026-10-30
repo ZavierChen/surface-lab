@@ -26,6 +26,7 @@ jobs:
         run: |
           node scripts/prepare.js
           node build/test-core.js
+          node build/test-mesh.js
           node build/build-zh.js
           node build/build.js
           node scripts/build-site.js

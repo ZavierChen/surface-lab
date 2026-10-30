@@ -1,5 +1,5 @@
 const axisColors=['#ff927c','#ffd574','#80bcff'];
-let axesCache,traceCache,drawn3d='',drawn2d='';
+let axesCache,traceCache,referenceCache,drawn3d='',drawn2d='';
 function axisDecoration(D){
  if(axesCache?.D===D)return axesCache;
  const traces=[];
@@ -30,7 +30,14 @@ async function render(){
   const traceKey=JSON.stringify([c,D,quality,state.traceAxis,state.k]),key3d=JSON.stringify([key,state.grid,state.trace,state.trace?[state.traceAxis,state.k]:null]),key2d=traceKey;
   if(key3d===drawn3d&&key2d===drawn2d)return;
   $('status').textContent='Updating…';
-  if(key!==geometryKey){geometry=surfaceTraces(c,D,quality,state.style);if(state.compare&&(cl.name.startsWith('Hyperboloid')||cl.name==='Elliptic cone'))geometry.push(...surfaceTraces({...c,q:0},D,quality,'transparent',true));geometryKey=key;}
+  if(key!==geometryKey){
+   geometry=surfaceTraces(c,D,quality,state.style);
+   if(state.compare&&(cl.name.startsWith('Hyperboloid')||cl.name==='Elliptic cone')){
+    const referenceKey=JSON.stringify([c.a,c.p,D,quality]);
+    if(referenceCache?.key!==referenceKey)referenceCache={key:referenceKey,data:surfaceTraces({...c,q:0},D,quality,'transparent',true)};
+    geometry.push(...referenceCache.data);
+   }geometryKey=key;
+  }
   if(traceCache?.key!==traceKey)traceCache={key:traceKey,value:makeTrace(c,quality)};
   let traces=geometry.slice(),t=traceCache.value;if(state.trace)traces.push(...traceLayers(t));
   const decoration=axisDecoration(D),axisLabels=decoration.axisLabels;traces.push(...decoration.traces);

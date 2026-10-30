@@ -46,9 +46,11 @@ In explicit mode, the left-side variable initially has coefficient 1 and exponen
 
 Geometry is clipped to the displayed cube. Increase quality or reduce the plot range to inspect small sampled features. Transparent surfaces may show WebGL depth-order artifacts.
 
+Solid and transparent analytic surfaces use indexed triangle meshes with reusable connectivity. Reference cones and scalar-field samples are cached independently of Q. Contour mode keeps the original isoline renderer and may be slower.
+
 ## Validation
 
-After building both languages, run `node build/test-core.js` and `node build/test-camera-demo.js` and `node build/test-mouse-camera.js`, then `node build/test-grab-roll.js` and `node build/test-equation-editor.js`, plus `node build/test-performance.js`. The browser test requires Playwright and Microsoft Edge (or an `EDGE_PATH` override); `PLAYWRIGHT_PATH` may point to an existing Playwright module.
+After building both languages, run `node build/test-core.js`, `node build/test-mesh.js` and `node build/test-camera-demo.js` and `node build/test-mouse-camera.js`, then `node build/test-grab-roll.js` and `node build/test-equation-editor.js`, plus `node build/test-performance.js`. The browser test requires Playwright and Microsoft Edge (or an `EDGE_PATH` override); `PLAYWRIGHT_PATH` may point to an existing Playwright module.
 
 The tests cover mathematical classifications, preset geometry, first-octant camera reset after orbit/pan/zoom, preservation of the current camera while editing parameters, Q transitions, cross-sections and offline operation.
 
