@@ -16,7 +16,7 @@ function sameCamera(a,b){for(const key of ['eye','center'])for(const axis of ['x
   sameCamera(await camera(),home);
   // Exercise real orbit input before testing reset from an intentionally inverted, panned, zoomed camera.
   await page.waitForTimeout(300);
-  const box=await page.locator('#plot3d').boundingBox();await page.mouse.move(box.x+box.width*.65,box.y+box.height*.45);await page.mouse.down({button:'right'});await page.mouse.move(box.x+box.width*.3,box.y+box.height*.65,{steps:12});await page.mouse.up({button:'right'});await page.waitForTimeout(300);
+  const box=await page.locator('#plot3d').boundingBox();await page.mouse.move(box.x+box.width*.65,box.y+box.height*.45);await page.mouse.down({button:'left'});await page.mouse.move(box.x+box.width*.3,box.y+box.height*.65,{steps:12});await page.mouse.up({button:'left'});await page.waitForTimeout(300);
   const orbited=await camera();assert(Math.abs(orbited.eye.x-home.eye.x)+Math.abs(orbited.eye.y-home.eye.y)>.05,'Orbit did not change camera');
   await page.evaluate(()=>{Lab.set({q:.5});});await page.evaluate(()=>Lab.flush());sameCamera(await camera(),orbited);
   for(const other of [

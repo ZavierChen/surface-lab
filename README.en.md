@@ -24,7 +24,7 @@ Open `outputs/surface-lab-en.exe`. The desktop application requires Windows x64 
 1. **Level sets and topology.** Select **Explore Q** for `x² + z² − y² = Q`. Move Q from positive to zero to negative. Observe a one-sheet hyperboloid, a cone and a two-sheet hyperboloid. Use the ±0.01 buttons to inspect the transition and enable **Reference cone** to compare their asymptotic shape. Select **Transparent** if the reference is hidden behind the solid surface.
 2. **Same signs versus opposite signs.** Compare **Elliptic paraboloid**, `y = 2x² + z²`, with **Saddle surface**, `y = x² − z²`. The signs of the squared terms determine the different curvatures; simply changing an exponent does not guarantee a saddle.
 3. **Cross-sections.** Return to the elliptic paraboloid and set the cutting plane to `y = 2`. The trace is `2x² + z² = 2`, an ellipse with semiaxes 1 and √2. Move k to zero to see the single vertex, then below zero to see an empty intersection.
-4. **Orientation.** Right-drag to rotate, scroll to zoom, left-drag to rotate about world X or Y (horizontal start: Y; vertical start: X), and hold both mouse buttons to pan freely. **Reset view** returns to the first octant (`x, y, z > 0`), looking toward the origin, with +z upright. It does not change the equation.
+4. **Orientation.** Left-drag to rotate freely, hold both mouse buttons and drag to pan (no Shift needed), and scroll to zoom. **X view**, **Y view** and **Z view** look toward the origin from the corresponding positive axis using orthographic projection. **Reset view** returns to the first octant (`x, y, z > 0`), looking toward the origin, with +z upright. It does not change the equation.
 
 ## Mathematical model
 
@@ -42,6 +42,6 @@ After building both languages, run `node build/test-core.js` and `node build/tes
 
 The tests cover mathematical classifications, preset geometry, first-octant camera reset after orbit/pan/zoom, preservation of the current camera while editing parameters, Q transitions, cross-sections and offline operation.
 
-Mouse regression tests read the actual WebGL camera, exercise single-axis left-button rotation, right-button orbit, chorded free pan and wheel zoom, and verify that sliders and window resizing preserve the rendered view even while a redraw is pending. Camera state is maintained separately from Plotly, and scene writes are serialized.
+Mouse regression tests read the actual WebGL camera, exercise free left-button rotation, X/Y/Z orthographic views, chorded free pan and wheel zoom, and verify that sliders and window resizing preserve the rendered view even while a redraw is pending. Camera state is maintained separately from Plotly, and scene writes are serialized.
 
 Third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). No project license has been assigned.
