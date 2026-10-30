@@ -13,7 +13,7 @@ using Microsoft.Web.WebView2.WinForms;
 [assembly: AssemblyTitle(Program.Title)]
 [assembly: AssemblyDescription("Offline Calculus III surface and cross-section explorer")]
 [assembly: AssemblyProduct(Program.Title)]
-[assembly: AssemblyVersion("2.2.0.0")]
+[assembly: AssemblyVersion("2.2.1.0")]
 static class Program {
 #if ENGLISH
  public const string Title="Surface Lab — Calculus III Demo";

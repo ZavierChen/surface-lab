@@ -10,6 +10,7 @@ const cameraController=(()=>{
  const norm=a=>Math.hypot(a.x,a.y,a.z);
  const unit=a=>mul(a,1/(norm(a)||1));
  const cross=(a,b)=>({x:a.y*b.z-a.z*b.y,y:a.z*b.x-a.x*b.z,z:a.x*b.y-a.y*b.x});
+ function rotateAxis(v,axis,angle){const c=Math.cos(angle),s=Math.sin(angle);return axis==='x'?{x:v.x,y:c*v.y-s*v.z,z:s*v.y+c*v.z}:{x:c*v.x+s*v.z,y:v.y,z:-s*v.x+c*v.z};}
  function serialize(action){const task=queue.then(async()=>{writing++;try{return await action();}finally{writing--;}});queue=task.catch(e=>console.error('Camera update failed',e));return task;}
  function save(value){camera=clone(value);revision++;}
  function apply(){return gd._fullLayout?Plotly.relayout(gd,{'scene.camera':clone(camera),'scene.uirevision':revision}):Promise.resolve();}
@@ -45,18 +46,18 @@ const cameraController=(()=>{
    const yaw=Math.atan2(offset.y,offset.x)-dx*.007;
    const pitch=Math.max(-Math.PI/2+.025,Math.min(Math.PI/2-.025,Math.asin(offset.z/distance)+dy*.007));
    c.eye=add(c.center,{x:distance*Math.cos(pitch)*Math.cos(yaw),y:distance*Math.cos(pitch)*Math.sin(yaw),z:distance*Math.sin(pitch)});c.up={x:0,y:0,z:1};
+  }else if(m==='axis'){
+   // Horizontal intent selects world Y; vertical intent selects world X.
+   // Lock for the whole drag and ignore motion perpendicular to that gesture.
+   if(!g.axis){if(Math.hypot(dx,dy)<4)return;g.axis=Math.abs(dx)>=Math.abs(dy)?'y':'x';}
+   const angle=(g.axis==='x'?dy:-dx)*.007;
+   c.eye=add(c.center,rotateAxis(offset,g.axis,angle));
+   // Rotate the complete camera frame, preserving a true single-axis rotation,
+   // including when crossing a pole. Center and eye-to-center distance do not move.
+   c.up=rotateAxis(c.up,g.axis,angle);
   }else{
    const b=basis(c),scale=2*distance*Math.tan(Math.PI/8)/Math.max(1,gd.clientHeight);
-   let shift;
-   if(m==='axis'){
-    if(!g.axis){if(Math.hypot(dx,dy)<4)return;
-     // Select the world X/Y axis closest to the initial on-screen drag, then lock it.
-     const score=k=>{const len=Math.hypot(b.right[k],b.up[k]);return len<.08?-1:Math.abs(dx*b.right[k]-dy*b.up[k])/len;};
-     g.axis=score('x')>=score('y')?'x':'y';
-    }
-    const k=g.axis,den=b.right[k]**2+b.up[k]**2;
-    shift={x:0,y:0,z:0};shift[k]=-(dx*b.right[k]-dy*b.up[k])*scale/Math.max(.0064,den);
-   }else shift=mul(add(mul(b.right,dx),mul(b.up,-dy)),-scale);
+   const shift=mul(add(mul(b.right,dx),mul(b.up,-dy)),-scale);
    c.center=add(c.center,shift);c.eye=add(c.eye,shift);
   }
   set(c);
@@ -65,6 +66,6 @@ const cameraController=(()=>{
  gd.addEventListener('pointercancel',finish,true);gd.addEventListener('lostpointercapture',()=>{gesture=null;gd.style.cursor='grab';});window.addEventListener('blur',finish);
  // Prevent Plotly's mouse drag and context-menu handlers from competing with ours.
  for(const name of ['mousedown','mousemove','mouseup','contextmenu','dblclick'])gd.addEventListener(name,e=>{if(name==='mousemove'&&!gesture)return;block(e);},true);
- gd.addEventListener('wheel',e=>{block(e);const c=clone(camera),offset=sub(c.eye,c.center),r=norm(offset),pixels=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?gd.clientHeight:1),next=Math.max(.12,Math.min(30,r*Math.exp(Math.max(-1,Math.min(1,pixels*.001)))));c.eye=add(c.center,mul(offset,next/r));set(c);if(gesture)begin({pointerId:gesture.id,clientX:gesture.lastX,clientY:gesture.lastY},gesture.mode);},{capture:true,passive:false});
+ gd.addEventListener('wheel',e=>{block(e);const c=clone(camera),offset=sub(c.eye,c.center),r=norm(offset),pixels=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?gd.clientHeight:1),next=Math.max(.12,Math.min(30,r*Math.exp(Math.max(-1,Math.min(1,pixels*.001)))));c.eye=add(c.center,mul(offset,next/r));set(c);if(gesture){const locked=gesture.axis;begin({pointerId:gesture.id,clientX:gesture.lastX,clientY:gesture.lastY},gesture.mode);gesture.axis=locked;}},{capture:true,passive:false});
  return {snapshot:()=>clone(camera),set,flush,render,resize,reset:()=>{finish();save(defaultCamera());return flush();}};
 })();
