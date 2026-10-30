@@ -11,7 +11,11 @@ node scripts/prepare.js
 node build/build-zh.js
 ```
 
-打开 `outputs/surface-lab.html`。中文版构建也会生成 `outputs/三维曲面实验室.html`。如果需要英文界面，运行 `node build/build.js`；它会覆盖 `outputs/surface-lab.html`。输出目录和临时构建目录不纳入版本控制。
+打开 `outputs/surface-lab.html`。中文版构建也会生成 `outputs/三维曲面实验室.html`。运行 `node build/build.js` 可生成独立的英文演示版 `outputs/surface-lab-en.html`，不会覆盖中文版。输出目录和临时构建目录不纳入版本控制。
+
+默认视角与“恢复视角”都从第一卦限（x、y、z 均为正）看向原点：+x 向左、+y 向右、+z 向上。恢复时同时重置旋转、缩放、平移和朝上方向；修改方程参数则保留当前观察视角。
+
+英文演示及课堂讲解建议见 [English demo guide](README.en.md)。两个语言版本使用同一套数学与相机逻辑。
 
 ## 构建 Windows 桌面版
 
@@ -21,7 +25,13 @@ node build/build-zh.js
 powershell -NoProfile -ExecutionPolicy Bypass -File build/compile-desktop.ps1
 ```
 
-生成 `outputs/surface-lab.exe`。程序将网页及所需 WebView2 SDK 组件嵌入 EXE；目标电脑仍需安装 WebView2 Runtime。
+生成 `outputs/surface-lab.exe`。英文桌面版先运行 `node build/build.js`，再运行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File build/compile-desktop.ps1 -Language en
+```
+
+生成 `outputs/surface-lab-en.exe`，窗口标题、加载提示和错误提示均为英文。程序将网页及所需 WebView2 SDK 组件嵌入 EXE；目标电脑仍需安装 WebView2 Runtime。两种语言版本的用户数据目录相互独立。
 
 ## 结构
 
@@ -43,10 +53,12 @@ node build/build-zh.js
 node build/test-zh.js
 node build/build.js
 node build/test-controls.js
-node build/build-zh.js  # 恢复中文版网页
+node build/test-camera-demo.js
 ```
 
 浏览器测试需要安装 Playwright 和 Microsoft Edge。测试默认从 Node 的模块搜索路径加载 `playwright`；也可以把 `PLAYWRIGHT_PATH` 设为已安装模块的绝对路径。默认使用 Windows 的 Edge 安装路径，可通过 `EDGE_PATH` 覆盖。浏览器测试会在 `build/` 写入截图。
+
+相机回归覆盖实际鼠标旋转、第一卦限恢复、平移和缩放恢复、调整参数时保留视角，以及中英文预设、Q 跨零、截线和离线运行。
 
 ## 许可
 

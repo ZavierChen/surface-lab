@@ -1,7 +1,10 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const state={mode:'implicit',solved:1,a:[1,-1,1],p:[2,2,2],q:1,D:5,quality:1,style:'solid',traceAxis:1,k:0,trace:true,compare:false,grid:true};
-const CAMERA={eye:{x:1.55,y:1.65,z:1.15},up:{x:0,y:0,z:1}};
+// A fresh reset target is independent of Plotly's live orbit/pan state.
+// First-octant view: +x left, +y right, +z up, looking at the origin.
+function defaultCamera(){return {eye:{x:.95,y:2.05,z:.82},center:{x:0,y:0,z:0},up:{x:0,y:0,z:1},projection:{type:'perspective'}};}
+function currentCamera(){const camera=$('plot3d').layout?.scene?.camera;return camera?JSON.parse(JSON.stringify(camera)):defaultCamera();}
 let timer,busy=false,pending=false,geometryKey='',geometry=[],lastRender=Promise.resolve(),lastPreset=2;
 const plotConfig={responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['toImage','sendDataToCloud'],displayModeBar:'hover'};
 for(let i=0;i<3;i++){

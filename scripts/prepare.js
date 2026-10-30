@@ -21,5 +21,5 @@ copy('vendor/plotly-gl3d.min.js');
 copy('scripts/build-en.js', 'build.js');
 copy('scripts/build-zh.js');
 copy('scripts/compile-desktop.ps1');
-for (const file of ['test-core.js', 'test-browser.js', 'test-controls.js', 'test-zh.js']) copy('tests/' + file);
+for (const file of ['test-core.js', 'test-browser.js', 'test-controls.js', 'test-zh.js', 'test-camera-demo.js']) copy('tests/' + file);
 console.log('Prepared build/ from source modules.');
