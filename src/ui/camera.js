@@ -19,6 +19,10 @@ const cameraController=(()=>{
   // Updating the whole camera object alone can leave the rendered projection stale.
   const c=clone(camera),update={'scene.camera.eye':c.eye,'scene.camera.center':c.center,'scene.camera.up':c.up,'scene.uirevision':revision};
   const live=gd._fullLayout.scene?._scene?.getCamera?.();
+  // Avoid a second WebGL redraw when react/resize already kept the camera.
+  // Compare the orthogonalized up vector used by the rendered camera.
+  const close=(a,b)=>a&&b&&norm(sub(a,b))<1e-7;
+  if(live?.projection?.type===c.projection.type&&close(live.eye,c.eye)&&close(live.center,c.center)&&close(live.up,basis(c).up))return Promise.resolve();
   if(live?.projection?.type!==c.projection.type)update['scene.camera.projection.type']=c.projection.type;
   return Plotly.relayout(gd,update);
  }

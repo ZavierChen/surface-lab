@@ -4,6 +4,10 @@ An offline interactive explorer for quadric surfaces, implicit level sets and pl
 
 ## Run the demo
 
+[Open the online demo](https://zavierchen.github.io/surface-lab/) or [download the offline package](https://github.com/ZavierChen/surface-lab/releases/latest/download/Surface-Lab-English-Demo.zip). The hosted version runs in the visitor’s browser; the author’s computer does not need to stay on.
+
+Auto quality adjusts detail using a 50 ms draw-time budget (a target of 20 updates/s, not guaranteed display FPS). Slider edits redraw after about 160 ms of stable input. Select a fixed quality level to override adaptation.
+
 ```text
 node scripts/prepare.js
 node build/build.js
@@ -44,7 +48,7 @@ Geometry is clipped to the displayed cube. Increase quality or reduce the plot r
 
 ## Validation
 
-After building both languages, run `node build/test-core.js` and `node build/test-camera-demo.js` and `node build/test-mouse-camera.js`, then `node build/test-grab-roll.js` and `node build/test-equation-editor.js`. The browser test requires Playwright and Microsoft Edge (or an `EDGE_PATH` override); `PLAYWRIGHT_PATH` may point to an existing Playwright module.
+After building both languages, run `node build/test-core.js` and `node build/test-camera-demo.js` and `node build/test-mouse-camera.js`, then `node build/test-grab-roll.js` and `node build/test-equation-editor.js`, plus `node build/test-performance.js`. The browser test requires Playwright and Microsoft Edge (or an `EDGE_PATH` override); `PLAYWRIGHT_PATH` may point to an existing Playwright module.
 
 The tests cover mathematical classifications, preset geometry, first-octant camera reset after orbit/pan/zoom, preservation of the current camera while editing parameters, Q transitions, cross-sections and offline operation.
 

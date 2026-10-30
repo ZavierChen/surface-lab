@@ -13,7 +13,7 @@ function join(files, to) {
   fs.writeFileSync(path.join(build, to), files.map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n'));
 }
 join(['src/math/model.js', 'src/math/classification.js', 'src/math/traces.js', 'src/math/surfaces.js'], 'math-core.js');
-join(['src/ui/controls.js', 'src/ui/equation-editor.js', 'src/ui/camera.js', 'src/ui/rendering.js', 'src/ui/events.js'], 'app.js');
+join(['src/ui/controls.js', 'src/ui/quality.js', 'src/ui/equation-editor.js', 'src/ui/camera.js', 'src/ui/rendering.js', 'src/ui/events.js'], 'app.js');
 for (const file of ['shell.html', 'shell-zh.html']) copy('src/templates/' + file);
 copy('src/i18n/zh.js');
 for (const file of ['desktop.cs', 'app.ico', 'app.manifest']) copy('src/desktop/' + file);
@@ -21,5 +21,5 @@ copy('vendor/plotly-gl3d.min.js');
 copy('scripts/build-en.js', 'build.js');
 copy('scripts/build-zh.js');
 copy('scripts/compile-desktop.ps1');
-for (const file of ['test-core.js', 'test-browser.js', 'test-controls.js', 'test-zh.js', 'test-camera-demo.js', 'test-mouse-camera.js', 'test-grab-roll.js', 'test-equation-editor.js']) copy('tests/' + file);
+for (const file of ['test-core.js', 'test-browser.js', 'test-controls.js', 'test-zh.js', 'test-camera-demo.js', 'test-mouse-camera.js', 'test-grab-roll.js', 'test-equation-editor.js', 'test-performance.js']) copy('tests/' + file);
 console.log('Prepared build/ from source modules.');

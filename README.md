@@ -4,9 +4,15 @@
 
 **Change the equation. Explore the surface. Understand its cross-sections.** An offline tool for multivariable calculus and classroom demonstrations, connecting algebraic equations, 3D surfaces and planar traces in one interface.
 
+[在线英文版 · Open English Demo](https://zavierchen.github.io/surface-lab/) · [在线中文版 · 中文](https://zavierchen.github.io/surface-lab/zh.html)
+
 [下载英文演示包 · Download English Demo](https://github.com/ZavierChen/surface-lab/releases/latest/download/Surface-Lab-English-Demo.zip) · [版本与附件 · Releases](https://github.com/ZavierChen/surface-lab/releases) · [英文课堂演示指南 · Teaching Guide](README.en.md)
 
 ## 快速开始 · Quick start
+
+直接打开上方在线链接即可使用，无需下载。网站由 GitHub Pages 托管，不依赖作者电脑开机，也无需自行租服务器；计算在访问者的浏览器中进行。首次打开在线版需要联网。
+
+Open either online link above without downloading a file. GitHub Pages hosts the site independently of the author’s computer; calculations run in the visitor’s browser. The online version needs a connection to load.
 
 下载英文演示包并解压，打开 **`surface-lab-en.html`** 即可使用。需要支持 WebGL 的现代浏览器；使用时无需安装 Node.js、启动服务器或联网。
 
@@ -33,6 +39,16 @@ Windows users can also run **`Surface Lab Demo.exe`**, which requires Windows x6
 顶部输入与左侧控件双向同步。0 次项按常数 1 计算；修改显式方程左侧变量的系数或次数时，会切换为隐式方程。
 
 Equation inputs and sidebar controls stay in sync. Zero-degree terms use the constant 1. Editing the solved variable’s coefficient or exponent switches an explicit equation to implicit mode.
+
+## 性能与画质 · Performance and quality
+
+拖动滑条时先更新数值，停止输入约 160 毫秒后再绘制最后的状态。自动画质默认开启，按绘制耗时在流畅、标准、精细之间调整：预算为每次 50 毫秒，约相当于每秒 20 次更新；这是调整目标，不是保证的实际显示帧率。一次过慢即降低一级，连续六次较快才恢复一级，避免频繁跳变。仍可手动固定画质。
+
+Slider values update immediately; the plot redraws the latest state after about 160 ms without new input. Auto quality is enabled by default and adjusts detail using a 50 ms draw-time budget, equivalent to a target of 20 updates per second rather than a guaranteed display frame rate. A slow update lowers detail; six fast updates restore one level. Manual quality overrides remain available.
+
+无变化时不重绘；切换三维外观不会重画二维截线，隐藏切平面后调整截线也不会重画三维曲面。
+
+Unchanged views skip redraws. Changing 3D appearance does not redraw the 2D trace, and editing a hidden cutting plane does not redraw the 3D surface.
 
 ## 鼠标与视角 · Mouse and camera controls
 
@@ -96,6 +112,12 @@ node build/build.js
 | `outputs/三维曲面实验室.html` | 中文版的同内容副本 · Identical Chinese copy |
 | `outputs/surface-lab-en.html` | 英文演示版 · English demo |
 
+### 在线版 · Hosted build
+
+运行 `node scripts/build-site.js` 将已构建的中英文 HTML 写入 `outputs/site/`，附带语言切换链接。主分支更新后，GitHub Actions 自动构建并发布到 GitHub Pages。离线 HTML 和 EXE 保持独立。
+
+Run `node scripts/build-site.js` after both HTML builds to create `outputs/site/` with language links. Updates to main trigger GitHub Actions to build and deploy to GitHub Pages. Offline HTML and EXE files remain available separately.
+
 ### Windows 桌面版 · Windows desktop builds
 
 需要 Windows x64、.NET Framework 4.x 编译器和 WebView2 Runtime。将 Microsoft.Web.WebView2 **1.0.3485.44** NuGet 包解压到 `build/webview2-sdk/`，确保包含 `lib/`、`runtimes/`、`LICENSE.txt` 和 `NOTICE.txt`。完成上述网页构建后运行：
@@ -140,6 +162,7 @@ node build/test-camera-demo.js
 node build/test-mouse-camera.js
 node build/test-grab-roll.js
 node build/test-equation-editor.js
+node build/test-performance.js
 ```
 
 浏览器测试需要 Playwright 和 Microsoft Edge。可用 `PLAYWRIGHT_PATH` 指定 Playwright 模块路径，用 `EDGE_PATH` 指定浏览器路径。截图保存在 `build/`。

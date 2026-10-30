@@ -1,6 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id);
-const state={mode:'implicit',solved:1,a:[1,-1,1],p:[2,2,2],q:1,D:5,quality:1,style:'solid',traceAxis:1,k:0,trace:true,compare:false,grid:true};
+const state={mode:'implicit',solved:1,a:[1,-1,1],p:[2,2,2],q:1,D:5,quality:1,autoQuality:true,style:'solid',traceAxis:1,k:0,trace:true,compare:false,grid:true};
 // A fresh reset target is independent of Plotly's live orbit/pan state.
 // First-octant view: +x left, +y right, +z up, looking at the origin.
 function defaultCamera(){return {eye:{x:.95,y:2.05,z:.82},center:{x:0,y:0,z:0},up:{x:0,y:0,z:1},projection:{type:'perspective'}};}
@@ -28,7 +28,7 @@ function sync(force=false){
  $('modeHint').textContent=explicit?`${AX[state.solved]} = A ${AX[axes[0]]}ᵖ + B ${AX[axes[1]]}ᵖ + Q; the solved exponent is unused.`:'A xᵖˣ + B yᵖʸ + C zᵖᶻ = Q';
  syncRange('qslider',state.q);if(force||document.activeElement!==$('qnumber'))$('qnumber').value=state.q;
  $('qValue').textContent='Q = '+fmt(state.q);
- $('domain').value=state.D;$('quality').value=state.quality;$('style').value=state.style;$('traceAxis').value=state.traceAxis;
+ $('domain').value=state.D;$('quality').value=state.autoQuality?'auto':state.quality;$('style').value=state.style;$('traceAxis').value=state.traceAxis;
  $('knumber').min=-state.D;$('knumber').max=state.D;if(force||document.activeElement!==$('knumber'))$('knumber').value=state.k;syncRange('kslider',state.k,-state.D,state.D);
  $('showTrace').checked=state.trace;$('grid').checked=state.grid;
  PRESETS.forEach((p,i)=>{$('preset'+i).classList.toggle('active',lastPreset===i);$('preset'+i).setAttribute('aria-pressed',lastPreset===i);});
@@ -41,4 +41,4 @@ function updateText(force=false){let c=canonical(state),cl=classify(c),hyper=cl.
  if(mixed){let at=q=>classify({...c,q}).name.replace('Hyperboloid of ','');$('qGuide').innerHTML=`<span>Q &lt; 0 · ${at(-1)}</span><span>Q = 0 · cone</span><span>Q &gt; 0 · ${at(1)}</span>`;let axis=AX.indexOf(cl.axis),pair=[0,1,2].filter(i=>i!==axis);$('qExplanation').textContent=cone?'At Q = 0 the two nappes meet at the origin.':hyper&&cl.name.includes('one sheet')?`At ${cl.axis} = 0, the waist semiaxes are ${pair.map(i=>fmt(Math.sqrt(c.q/c.a[i]))).join(' and ')}. They shrink to zero as Q approaches 0.`:hyper?`The vertices are at ${cl.axis} = ±${fmt(Math.sqrt(c.q/c.a[axis]))}. The gap closes as Q approaches 0.`:'';
  }else{$('qGuide').innerHTML=state.mode==='explicit'?'<span>Negative shift</span><span>Q translates along the solved axis</span><span>Positive shift</span>':'<span>Negative Q</span><span>Q selects the level set F = 0</span><span>Positive Q</span>';$('qExplanation').textContent=state.mode==='explicit'?`Q moves the surface along ${AX[state.solved]}; it does not change its type.`:'';}
 }
-// Throttle rather than trailing-edge debounce: long slider drags keep producing new frames.
+// Expensive redraws are scheduled after input settles; controls update immediately.
