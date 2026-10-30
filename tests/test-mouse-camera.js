@@ -52,7 +52,7 @@ try{for(const lang of ['zh','en']){
   await reset();const second=first==='left'?'right':'left',vb=await page.locator('#plot3d').boundingBox(),x=vb.x+vb.width/2,y=vb.y+vb.height/2;
   await page.mouse.move(x,y);await page.mouse.down({button:first});await page.mouse.down({button:second});await page.mouse.move(x+50,y+35,{steps:8});await settle();const pan=await camera();sameVector(sub(pan.eye,pan.center),sub(home.eye,home.center));assert(len(pan.center)>.01);
   await page.mouse.up({button:second});await settle();same(await camera(),pan);
-  await page.mouse.move(x+80,y+60,{steps:6});await page.mouse.up({button:first});await settle();const orbit=await camera();sameVector(orbit.center,pan.center);assert(len(sub(orbit.eye,pan.eye))>.01);
+  await page.mouse.move(x+80,y+60,{steps:6});if(first==='right')await page.mouse.move(x+60,y+105,{steps:6});await page.mouse.up({button:first});await settle();const orbit=await camera();if(first==='left'){sameVector(orbit.center,pan.center);assert(len(sub(orbit.eye,pan.eye))>.01);}else{sameVector(sub(orbit.eye,orbit.center),sub(pan.eye,pan.center));assert(len(sub(orbit.up,pan.up))>.01);}
  }
  await reset();same(await camera(),home);await page.screenshot({path:path.join(__dirname,`mouse-${lang}.png`),fullPage:true});assert.equal(await page.locator('#error').innerText(),'');assert.deepEqual(errors,[]);await page.close();console.log(`${lang}: free orbit; positive X/Y/Z orthographic views; both chord orders; wheel zoom; rendered-camera preservation during sliders, redraw and resize; reset passed.`);
 }}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1);});

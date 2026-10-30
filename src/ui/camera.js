@@ -37,8 +37,23 @@ const cameraController=(()=>{
  });}
  function resize(){return serialize(async()=>{if(gd._fullLayout){await Plotly.Plots.resize(gd);await apply();}});}
  function basis(c){const forward=unit(sub(c.center,c.eye));let right=cross(forward,c.up);if(norm(right)<1e-8)right={x:1,y:0,z:0};right=unit(right);return {right,up:unit(cross(right,forward))};}
- function mode(buttons){return (buttons&3)===3||(buttons&4)?'pan':buttons&3?'rotate':null;}
- function begin(e,m){gesture={id:e.pointerId,mode:m,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,camera:clone(camera)};gd.style.cursor=m==='rotate'?'grabbing':'move';}
+ function trackball(x,y,rect){
+  const radius=Math.max(1,Math.min(rect.width,rect.height)*.45);
+  const u=(x-rect.left-rect.width/2)/radius,v=(rect.top+rect.height/2-y)/radius,d=u*u+v*v;
+  // A sphere near the center and a smooth hyperbolic sheet beyond its rim.
+  // This keeps edge drags usable without a discontinuity at the boundary.
+  return unit({x:u,y:v,z:d<=.5?Math.sqrt(1-d):.5/Math.sqrt(d)});
+ }
+ function originPixel(rect){
+  const params=gd._fullLayout?.scene?._scene?.glplot?.cameraParams;
+  if(params){
+   let p=[0,0,0,1];for(const matrix of [params.model,params.view,params.projection])p=[0,1,2,3].map(row=>p.reduce((sum,v,col)=>sum+matrix[col*4+row]*v,0));
+   if(p.every(Number.isFinite)&&Math.abs(p[3])>1e-8)return {x:rect.left+(1+p[0]/p[3])*rect.width/2,y:rect.top+(1-p[1]/p[3])*rect.height/2};
+  }
+  return {x:rect.left+rect.width/2,y:rect.top+rect.height/2};
+ }
+ function mode(buttons){return (buttons&3)===3||(buttons&4)?'pan':buttons&2?'roll':buttons&1?'rotate':null;}
+ function begin(e,m){const rect=gd.getBoundingClientRect();gesture={id:e.pointerId,mode:m,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,camera:clone(camera),rect,pivot:originPixel(rect),rollAngle:0};gd.style.cursor=m==='pan'?'move':'grabbing';}
  function finish(){const id=gesture?.id;gesture=null;gd.style.cursor='grab';if(id!==undefined&&gd.hasPointerCapture(id))gd.releasePointerCapture(id);}
  function block(e){e.preventDefault();e.stopImmediatePropagation();}
  gd.style.touchAction='none';gd.style.cursor='grab';
@@ -49,13 +64,24 @@ const cameraController=(()=>{
   // Chorded buttons change through pointermove, not necessarily pointerdown/up.
   // Rebase whenever the button combination changes; never jump between operations.
   if(m!==gesture.mode){begin(e,m);return;}
-  const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y,c=clone(g.camera),offset=sub(c.eye,c.center),distance=norm(offset);g.lastX=e.clientX;g.lastY=e.clientY;
+  const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y,c=clone(g.camera),offset=sub(c.eye,c.center),distance=norm(offset),lastX=g.lastX,lastY=g.lastY;g.lastX=e.clientX;g.lastY=e.clientY;
   if(m==='rotate'){
-   // Free orbit in the screen's frame, including from an exact axis view.
-   // Rotate the entire frame so dragging across a pole never snaps upright.
-   const b=basis(c),motion=Math.hypot(dx,dy);if(!motion)return;
-   const axis=unit(add(mul(b.up,-dx),mul(b.right,dy))),angle=motion*.007;
+   // Drag the visible surface of a virtual ball; rotate the camera inversely.
+   // Screen Y points down, whereas the camera's up vector points up.
+   const b=basis(c),from=trackball(g.x,g.y,g.rect),to=trackball(e.clientX,e.clientY,g.rect);
+   const turn=cross(to,from),sine=norm(turn),cosine=to.x*from.x+to.y*from.y+to.z*from.z;
+   if(sine<1e-10){set(c);return;}
+   const axis=unit(add(add(mul(b.right,turn.x),mul(b.up,turn.y)),mul(unit(offset),turn.z))),angle=Math.atan2(sine,cosine);
    c.eye=add(c.center,rotate(offset,axis,angle));c.up=rotate(b.up,axis,angle);
+  }else if(m==='roll'){
+   // Steering-wheel motion around the projected world origin, even after panning.
+   const a={x:lastX-g.pivot.x,y:lastY-g.pivot.y},b={x:e.clientX-g.pivot.x,y:e.clientY-g.pivot.y};
+   const delta={x:b.x-a.x,y:b.y-a.y},squared=delta.x*delta.x+delta.y*delta.y;
+   const t=squared?Math.max(0,Math.min(1,-(a.x*delta.x+a.y*delta.y)/squared)):0;
+   // Ignore strokes through the center, where a wheel angle is undefined.
+   if(Math.hypot(a.x+t*delta.x,a.y+t*delta.y)<12)return;
+   g.rollAngle+=Math.atan2(a.x*b.y-a.y*b.x,a.x*b.x+a.y*b.y);
+   const axis=unit(offset);c.eye=rotate(c.eye,axis,g.rollAngle);c.center=rotate(c.center,axis,g.rollAngle);c.up=rotate(c.up,axis,g.rollAngle);
   }else{
    const b=basis(c),scale=2*distance*Math.tan(Math.PI/8)/Math.max(1,gd.clientHeight);
    const shift=mul(add(mul(b.right,dx),mul(b.up,-dy)),-scale);
