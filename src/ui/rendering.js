@@ -21,9 +21,9 @@ async function render(){
    let end=[0,0,0];end[i]=D;axisLabels.push({x:end[0],y:end[1],z:end[2],text:'<b>+'+AX[i]+'</b>',showarrow:false,font:{size:19,color:axisColors[i]},bgcolor:'rgba(11,19,33,0.82)',borderpad:3,yshift:14});
   }
   traces.push({type:'scatter3d',x:[0],y:[0],z:[0],mode:'markers',marker:{color:'#ffffff',size:5,line:{color:'#0b1321',width:2}},name:'Origin',hovertemplate:'Origin (0, 0, 0)<extra></extra>',showlegend:false});
-  axisLabels.push({x:0,y:0,z:0,text:'O (0, 0, 0)',showarrow:true,arrowhead:0,arrowcolor:'#eef5ff',arrowwidth:1,ax:36,ay:28,font:{size:12,color:'#ffffff'},bgcolor:'rgba(11,19,33,0.85)',borderpad:3});
+  axisLabels.push({x:0,y:0,z:0,text:'O (0, 0, 0)',showarrow:true,arrowhead:0,arrowcolor:'#eef5ff',arrowwidth:1,ax:-42,ay:38,font:{size:12,color:'#ffffff'},bgcolor:'rgba(11,19,33,0.85)',borderpad:3});
   const axis=k=>({title:{text:k,font:{size:22,color:axisColors[AX.indexOf(k)]}},range:[-D,D],showgrid:state.grid,gridcolor:'#40566e',gridwidth:1,zeroline:false,showline:true,linecolor:'#7e95ad',linewidth:2,showbackground:true,backgroundcolor:'#111e2d',tickfont:{size:13,color:'#cfdeee'},ticks:'outside',tickcolor:'#a7bed6',ticklen:5,nticks:5,showspikes:false});
-  let layout={paper_bgcolor:'#0e1726',font:{color:'#b4c3d5',family:'system-ui'},margin:{l:0,r:0,t:0,b:0},showlegend:false,uirevision:'surface-lab-camera',scene:{xaxis:axis('x'),yaxis:axis('y'),zaxis:axis('z'),annotations:axisLabels,aspectmode:'cube',camera:CAMERA,dragmode:'orbit'},annotations:[]};
+  let layout={paper_bgcolor:'#0e1726',font:{color:'#b4c3d5',family:'system-ui'},margin:{l:0,r:0,t:0,b:0},showlegend:false,uirevision:'surface-lab-camera',scene:{xaxis:axis('x'),yaxis:axis('y'),zaxis:axis('z'),annotations:axisLabels,aspectmode:'cube',camera:currentCamera(),dragmode:'orbit'},annotations:[]};
   if(['Empty set','All of space'].includes(cl.name))layout.annotations=[{text:cl.name==='Empty set'?'No real solutions':'Every point satisfies this equation',xref:'paper',yref:'paper',x:.5,y:.95,showarrow:false,font:{color:'#f8b85a',size:15}}];
   let xy=pathArrays(t.paths,t.points,v=>v),data2=[{type:'scatter',mode:'lines',x:xy[0],y:xy[1],line:{color:'#ff88b0',width:2.5},hovertemplate:`${AX[t.uv[0]]}: %{x:.4g}<br>${AX[t.uv[1]]}: %{y:.4g}<extra></extra>`}];
   if(t.points.length)data2.push({type:'scatter',mode:'markers',x:t.points.map(p=>p[0]),y:t.points.map(p=>p[1]),marker:{size:9,color:'#ff88b0'}});
@@ -31,7 +31,7 @@ async function render(){
   if(!t.paths.length&&!t.points.length)two.annotations=[{text:t.whole?'Entire plane':'No trace in this window',xref:'paper',yref:'paper',x:.5,y:.9,showarrow:false,font:{color:'#f8b85a',size:13}}];
   $('traceEq').innerHTML=`<span class="small">${AX[t.axis]} = ${fmt(state.k)} → </span>`+expr(t.uv.map(i=>c.a[i]),t.uv.map(i=>c.p[i]),t.uv.map(i=>AX[i]))+' = '+fmt(t.q);
   $('traceNote').textContent=t.note+(!state.trace?' (3D cutting plane hidden.)':'');
-  await Promise.all([Plotly.react('plot3d',traces,layout,plotConfig),Plotly.react('plot2d',data2,two,{...plotConfig,scrollZoom:false,displayModeBar:false})]);
+  await Promise.all([cameraController.render(traces,layout,plotConfig),Plotly.react('plot2d',data2,two,{...plotConfig,scrollZoom:false,displayModeBar:false})]);
   let analytic=!geometry.some(t=>t.type==='isosurface');$('status').textContent=(analytic?'Analytic geometry':'Sampled F = 0')+' · '+Math.round(performance.now()-started)+' ms';
   window.__lastResult={classification:cl.name,trace:t.note,surfaceCount:geometry.length,elapsed:performance.now()-started};
  }catch(e){$('error').textContent='Unable to render: '+e.message+' Try a lower quality or a WebGL-enabled browser.';$('status').textContent='Rendering error';console.error(e);}finally{busy=false;if(pending)schedule();}

@@ -11,7 +11,13 @@ node scripts/prepare.js
 node build/build-zh.js
 ```
 
-打开 `outputs/surface-lab.html`。中文版构建也会生成 `outputs/三维曲面实验室.html`。如果需要英文界面，运行 `node build/build.js`；它会覆盖 `outputs/surface-lab.html`。输出目录和临时构建目录不纳入版本控制。
+打开 `outputs/surface-lab.html`。中文版构建也会生成 `outputs/三维曲面实验室.html`。运行 `node build/build.js` 可生成独立的英文演示版 `outputs/surface-lab-en.html`，不会覆盖中文版。输出目录和临时构建目录不纳入版本控制。
+
+默认视角与“恢复视角”都从第一卦限（x、y、z 均为正）看向原点：+x 向左、+y 向右、+z 向上。恢复时同时重置旋转、缩放、平移和朝上方向；修改方程参数则保留当前观察视角。
+
+鼠标操作：左键拖动抓取三维旋转：用虚拟球面让图形跟随鼠标，灵敏度随视图区大小调整；右键拖动以坐标原点为中心顺时针或逆时针转动画面，保持三维观察方向；左右键同时按住拖动，在屏幕平面内平移，不需要 Shift；滚轮缩放。X、Y、Z 正视按钮从对应坐标轴的正方向看向原点，采用正交投影；恢复视角返回默认的第一卦限透视图。滑条、画质、截面与显示范围更新均保留当前相机状态。相机状态独立于绘图库保存，绘图、相机和窗口大小更新按顺序执行，避免重绘覆盖正在进行的操作。
+
+英文演示及课堂讲解建议见 [English demo guide](README.en.md)。两个语言版本使用同一套数学与相机逻辑。
 
 ## 构建 Windows 桌面版
 
@@ -21,7 +27,13 @@ node build/build-zh.js
 powershell -NoProfile -ExecutionPolicy Bypass -File build/compile-desktop.ps1
 ```
 
-生成 `outputs/surface-lab.exe`。程序将网页及所需 WebView2 SDK 组件嵌入 EXE；目标电脑仍需安装 WebView2 Runtime。
+生成 `outputs/surface-lab.exe`。英文桌面版先运行 `node build/build.js`，再运行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File build/compile-desktop.ps1 -Language en
+```
+
+生成 `outputs/surface-lab-en.exe`，窗口标题、加载提示和错误提示均为英文。程序将网页及所需 WebView2 SDK 组件嵌入 EXE；目标电脑仍需安装 WebView2 Runtime。两种语言版本的用户数据目录相互独立。
 
 ## 结构
 
@@ -43,10 +55,18 @@ node build/build-zh.js
 node build/test-zh.js
 node build/build.js
 node build/test-controls.js
-node build/build-zh.js  # 恢复中文版网页
+node build/test-camera-demo.js
+node build/test-mouse-camera.js
+node build/test-grab-roll.js
 ```
 
 浏览器测试需要安装 Playwright 和 Microsoft Edge。测试默认从 Node 的模块搜索路径加载 `playwright`；也可以把 `PLAYWRIGHT_PATH` 设为已安装模块的绝对路径。默认使用 Windows 的 Edge 安装路径，可通过 `EDGE_PATH` 覆盖。浏览器测试会在 `build/` 写入截图。
+
+相机回归覆盖实际鼠标旋转、第一卦限恢复、平移和缩放恢复、调整参数时保留视角，以及中英文预设、Q 跨零、截线和离线运行。
+
+抓取与画面旋转回归使用实际渲染矩阵，检查单叶双曲面近侧随鼠标移动、平移后仍绕原点转动画面，以及原点附近不产生突然自转。
+
+鼠标回归会读取实际 WebGL 相机，检查自由旋转、X/Y/Z 正交视图、双键平移、滚轮缩放、连续滑条更新、重绘期间拖动、窗口调整和视角恢复。
 
 ## 许可
 
