@@ -31,7 +31,7 @@ async function render(){
   if(!t.paths.length&&!t.points.length)two.annotations=[{text:t.whole?'Entire plane':'No trace in this window',xref:'paper',yref:'paper',x:.5,y:.9,showarrow:false,font:{color:'#f8b85a',size:13}}];
   $('traceEq').innerHTML=`<span class="small">${AX[t.axis]} = ${fmt(state.k)} → </span>`+expr(t.uv.map(i=>c.a[i]),t.uv.map(i=>c.p[i]),t.uv.map(i=>AX[i]))+' = '+fmt(t.q);
   $('traceNote').textContent=t.note+(!state.trace?' (3D cutting plane hidden.)':'');
-  await Promise.all([Plotly.react('plot3d',traces,layout,plotConfig),Plotly.react('plot2d',data2,two,{...plotConfig,scrollZoom:false,displayModeBar:false})]);
+  await Promise.all([cameraController.render(traces,layout,plotConfig),Plotly.react('plot2d',data2,two,{...plotConfig,scrollZoom:false,displayModeBar:false})]);
   let analytic=!geometry.some(t=>t.type==='isosurface');$('status').textContent=(analytic?'Analytic geometry':'Sampled F = 0')+' · '+Math.round(performance.now()-started)+' ms';
   window.__lastResult={classification:cl.name,trace:t.note,surfaceCount:geometry.length,elapsed:performance.now()-started};
  }catch(e){$('error').textContent='Unable to render: '+e.message+' Try a lower quality or a WebGL-enabled browser.';$('status').textContent='Rendering error';console.error(e);}finally{busy=false;if(pending)schedule();}

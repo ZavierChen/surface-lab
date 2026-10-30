@@ -25,7 +25,7 @@ const replacements=[
 ];
 for(let [a,b] of replacements){if(!app.includes(a))throw Error('Missing replacement: '+a);app=app.replaceAll(a,b);}
 // Resize the plots with their panels, including a resized native desktop window.
-app+=`\nlet resizeTimer;new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if($('plot3d')._fullLayout)Plotly.Plots.resize('plot3d');if($('plot2d')._fullLayout)Plotly.Plots.resize('plot2d');},100);}).observe(document.querySelector('.plotwrap'));\n`;
+app+=`\nlet resizeTimer;new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if($('plot3d')._fullLayout)cameraController.resize();if($('plot2d')._fullLayout)Plotly.Plots.resize('plot2d');},100);}).observe(document.querySelector('.plotwrap'));\n`;
 fs.writeFileSync(path.join(dir,'app-zh.js'),app);
 let html=fs.readFileSync(path.join(dir,'shell-zh.html'),'utf8');for(let [tag,file] of [['PLOTLY_BUNDLE','plotly-gl3d.min.js'],['MATH_CORE','math-core.js'],['ZH_CODE','zh.js'],['APP_CODE','app-zh.js']])html=html.replace('<!-- '+tag+' -->',()=>'<script>\n'+fs.readFileSync(path.join(dir,file),'utf8').replace(/<\/script/gi,'<\\/script')+'\n</script>');
 for(let name of ['surface-lab.html','三维曲面实验室.html'])fs.writeFileSync(path.join(dir,'../outputs',name),html);

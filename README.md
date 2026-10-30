@@ -15,6 +15,8 @@ node build/build-zh.js
 
 默认视角与“恢复视角”都从第一卦限（x、y、z 均为正）看向原点：+x 向左、+y 向右、+z 向上。恢复时同时重置旋转、缩放、平移和朝上方向；修改方程参数则保留当前观察视角。
 
+鼠标操作：左键按起始拖动方向锁定沿世界坐标 X 或 Y 轴平移；右键旋转并保持 z 轴朝上；左右键同时按住时在屏幕平面内自由平移；滚轮缩放。滑条、画质、截面与显示范围更新均保留当前相机状态。相机状态独立于绘图库保存，绘图、相机和窗口大小更新按顺序执行，避免重绘覆盖正在进行的操作。
+
 英文演示及课堂讲解建议见 [English demo guide](README.en.md)。两个语言版本使用同一套数学与相机逻辑。
 
 ## 构建 Windows 桌面版
@@ -54,11 +56,14 @@ node build/test-zh.js
 node build/build.js
 node build/test-controls.js
 node build/test-camera-demo.js
+node build/test-mouse-camera.js
 ```
 
 浏览器测试需要安装 Playwright 和 Microsoft Edge。测试默认从 Node 的模块搜索路径加载 `playwright`；也可以把 `PLAYWRIGHT_PATH` 设为已安装模块的绝对路径。默认使用 Windows 的 Edge 安装路径，可通过 `EDGE_PATH` 覆盖。浏览器测试会在 `build/` 写入截图。
 
 相机回归覆盖实际鼠标旋转、第一卦限恢复、平移和缩放恢复、调整参数时保留视角，以及中英文预设、Q 跨零、截线和离线运行。
+
+鼠标回归会读取实际 WebGL 相机，检查 X/Y 锁轴、右键旋转、双键平移、滚轮缩放、连续滑条更新、重绘期间拖动、窗口调整和视角恢复。
 
 ## 许可
 

@@ -4,9 +4,9 @@ const state={mode:'implicit',solved:1,a:[1,-1,1],p:[2,2,2],q:1,D:5,quality:1,sty
 // A fresh reset target is independent of Plotly's live orbit/pan state.
 // First-octant view: +x left, +y right, +z up, looking at the origin.
 function defaultCamera(){return {eye:{x:.95,y:2.05,z:.82},center:{x:0,y:0,z:0},up:{x:0,y:0,z:1},projection:{type:'perspective'}};}
-function currentCamera(){const camera=$('plot3d').layout?.scene?.camera;return camera?JSON.parse(JSON.stringify(camera)):defaultCamera();}
+function currentCamera(){return cameraController.snapshot();}
 let timer,busy=false,pending=false,geometryKey='',geometry=[],lastRender=Promise.resolve(),lastPreset=2;
-const plotConfig={responsive:true,displaylogo:false,scrollZoom:true,modeBarButtonsToRemove:['toImage','sendDataToCloud'],displayModeBar:'hover'};
+const plotConfig={responsive:true,displaylogo:false,scrollZoom:false,modeBarButtonsToRemove:['toImage','sendDataToCloud'],displayModeBar:'hover'};
 for(let i=0;i<3;i++){
  let div=document.createElement('div');div.className='coefficient';div.id='coefficient'+i;
  div.innerHTML=`<div class="row"><label id="coefficientLabel${i}" for="a${i}">${'ABC'[i]} · ${AX[i]}</label><input id="an${i}" type="number" step="any" min="-10000" max="10000" aria-label="Exact coefficient ${'ABC'[i]}"></div><input id="a${i}" type="range" min="-5" max="5" step="0.01" aria-label="Coefficient ${'ABC'[i]}">`;$('coefficients').append(div);
